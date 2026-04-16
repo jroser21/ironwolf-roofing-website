@@ -15,6 +15,7 @@ backend/*.db
 
 # Wrangler
 .wrangler/
+wrangler.toml
 
 # Large data files
 data/parcels/Parcels.dbf

@@ -1,4 +1,4 @@
-// Premier Roofing - Backend API Server
+// Ironwolf Roofing - Backend API Server
 require('dotenv').config();
 
 const express = require('express');
@@ -8,6 +8,56 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// =============================================
+// Email Notifications (SendGrid)
+// =============================================
+
+const sgMail = require('@sendgrid/mail');
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const EMAIL_FROM = process.env.EMAIL_FROM || 'info@ironwolfroofing.com';
+const EMAIL_TO = process.env.EMAIL_TO || 'info@ironwolfroofing.com';
+
+if (SENDGRID_API_KEY) {
+  sgMail.setApiKey(SENDGRID_API_KEY);
+  console.log(`Email notifications enabled — will send to ${EMAIL_TO}`);
+} else {
+  console.log('Email notifications disabled (SENDGRID_API_KEY not set)');
+}
+
+async function notifyNewLead(lead) {
+  if (!SENDGRID_API_KEY) return;
+  const msg = {
+    to: EMAIL_TO,
+    from: EMAIL_FROM,
+    subject: `New Lead: ${lead.first_name} ${lead.last_name}`,
+    text: `New inspection request from ${lead.first_name} ${lead.last_name}
+
+Phone: ${lead.phone}
+Email: ${lead.email}
+Address: ${lead.address || '(not provided)'}
+Reason: ${lead.message || '(not provided)'}
+
+---
+View all leads: ${process.env.FRONTEND_URL || 'http://localhost:5500'}/admin.html`,
+    html: `<h2>New Inspection Request</h2>
+<table style="border-collapse:collapse;font-family:sans-serif;">
+  <tr><td style="padding:8px;font-weight:bold;">Name</td><td style="padding:8px;">${lead.first_name} ${lead.last_name}</td></tr>
+  <tr><td style="padding:8px;font-weight:bold;">Phone</td><td style="padding:8px;"><a href="tel:${lead.phone}">${lead.phone}</a></td></tr>
+  <tr><td style="padding:8px;font-weight:bold;">Email</td><td style="padding:8px;"><a href="mailto:${lead.email}">${lead.email}</a></td></tr>
+  <tr><td style="padding:8px;font-weight:bold;">Address</td><td style="padding:8px;">${lead.address || '(not provided)'}</td></tr>
+  <tr><td style="padding:8px;font-weight:bold;">Reason</td><td style="padding:8px;">${lead.message || '(not provided)'}</td></tr>
+</table>
+<br>
+<a href="${process.env.FRONTEND_URL || 'http://localhost:5500'}/admin.html">View all leads in dashboard</a>`
+  };
+  try {
+    await sgMail.send(msg);
+    console.log(`Email sent for lead ${lead.id} to ${EMAIL_TO}`);
+  } catch (err) {
+    console.error(`Failed to send email for lead ${lead.id}:`, err.message);
+  }
+}
 
 // =============================================
 // Database Setup (SQLite)
@@ -106,6 +156,14 @@ app.post('/api/leads', (req, res) => {
     const result = stmt.run(first_name, last_name, email, phone, address || null, service || null, message || null);
 
     console.log(`New lead created: ID ${result.lastInsertRowid} - ${first_name} ${last_name}`);
+
+    // Fire-and-forget SMS notification; never blocks or fails the response
+    notifyNewLead({
+      id: result.lastInsertRowid,
+      first_name, last_name, email, phone,
+      address: address || null,
+      message: message || null
+    });
 
     res.status(201).json({
       success: true,
@@ -378,7 +436,7 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`
 ╔═══════════════════════════════════════════╗
-║   Premier Roofing API Server              ║
+║   Ironwolf Roofing API Server             ║
 ║   Running on http://localhost:${PORT}        ║
 ╚═══════════════════════════════════════════╝
   `);

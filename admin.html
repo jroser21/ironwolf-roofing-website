@@ -3,20 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | Premier Roofing Co.</title>
+  <title>Admin Dashboard | Ironwolf Roofing</title>
   <style>
     :root {
-      --primary-color: #1e3a5f;
-      --primary-dark: #152a45;
-      --secondary-color: #e67e22;
+      --primary-color: #0f2847;
+      --primary-dark: #000000;
+      --secondary-color: #2563eb;
+      --silver: #c0c0c0;
       --success-color: #27ae60;
       --warning-color: #f1c40f;
       --danger-color: #e74c3c;
-      --text-dark: #2c3e50;
-      --text-light: #6c757d;
+      --text-dark: #0a0a0a;
+      --text-light: #6b7280;
       --white: #ffffff;
-      --light-gray: #f8f9fa;
-      --border-color: #e9ecef;
+      --light-gray: #f5f5f5;
+      --border-color: #d1d5db;
     }
 
     * {
@@ -423,13 +424,14 @@
 <body>
   <!-- Header -->
   <header class="admin-header">
-    <h1>Premier<span>Roofing</span> Admin</h1>
+    <h1>Ironwolf<span>Roofing</span> Admin</h1>
     <div class="header-actions">
       <div class="connection-status">
         <span class="status-dot" id="connectionDot"></span>
         <span id="connectionText">Checking...</span>
       </div>
       <button class="btn btn-secondary" onclick="refreshData()">Refresh</button>
+      <a href="internal-estimator.html" class="btn btn-secondary">Roof Estimator</a>
       <a href="index.html" class="btn btn-primary">View Website</a>
     </div>
   </header>

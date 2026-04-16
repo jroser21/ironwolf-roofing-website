@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Internal Estimator | Ironwolf Roofing</title>
+  <link rel="stylesheet" href="styles.css?v=10">
+  <style>
+    .internal-banner {
+      background: var(--primary-color);
+      color: var(--white);
+      padding: 0.75rem 0;
+      font-size: 0.9rem;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+    .internal-banner a {
+      color: var(--white);
+      text-decoration: underline;
+      margin: 0 0.5rem;
+    }
+    .internal-banner strong {
+      letter-spacing: 0.1em;
+    }
+    .internal-main {
+      padding: 60px 0 80px;
+    }
+  </style>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCzCJaCaLJkVbHf5X8aqIB1WdHBNDoGgvc&libraries=places&callback=initAutocomplete" async defer></script>
+</head>
+<body>
+  <!-- Internal Banner -->
+  <div class="internal-banner">
+    <strong>INTERNAL TOOL</strong> &mdash; Team use only.
+    <a href="admin.html">Back to Admin</a> |
+    <a href="index.html">Public Site</a>
+  </div>
+
+  <!-- Main Content -->
+  <main class="internal-main">
+    <section class="instant-estimate" id="instant-estimate">
+      <div class="container">
+        <div class="section-header">
+          <h2>Satellite Roof Estimator</h2>
+          <p>Enter a property address to pull satellite-based roof measurements and generate a pricing estimate.</p>
+        </div>
+
+        <div class="estimate-tool">
+          <div class="estimate-input-section">
+            <div class="address-input-wrapper">
+              <label for="addressInput">Property Address</label>
+              <div class="address-input-group">
+                <input type="text" id="addressInput" placeholder="Start typing an address..." autocomplete="off">
+                <button type="button" id="analyzeBtn" class="btn btn-primary">
+                  <span class="btn-text">Analyze Roof</span>
+                  <span class="btn-loading" style="display: none;">Analyzing...</span>
+                </button>
+              </div>
+              <p class="input-hint">Uses Google Solar API satellite imagery for accurate measurement.</p>
+            </div>
+          </div>
+
+          <div class="estimate-results" id="estimateResults" style="display: none;">
+            <!-- Report Header -->
+            <div class="report-header">
+              <div class="report-title">
+                <h3>Roof Measurement Report</h3>
+                <p class="report-date" id="reportDate">Generated: --</p>
+              </div>
+              <div class="report-address">
+                <span class="label">Property Address:</span>
+                <span id="reportAddress">--</span>
+              </div>
+            </div>
+
+            <div class="report-grid">
+              <!-- Left Column: Map & Property Image -->
+              <div class="report-left">
+                <div class="map-container">
+                  <h4>Satellite View</h4>
+                  <div id="satelliteMap" class="satellite-map">
+                    <div class="map-placeholder">
+                      <span>&#128506;</span>
+                      <p>Satellite view will appear here</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Roof Complexity -->
+                <div class="report-card">
+                  <h4>Roof Complexity Rating</h4>
+                  <div class="complexity-meter">
+                    <div class="complexity-bar" id="complexityBar"></div>
+                  </div>
+                  <div class="complexity-labels">
+                    <span>Simple</span>
+                    <span>Moderate</span>
+                    <span>Complex</span>
+                    <span>Very Complex</span>
+                  </div>
+                  <p class="complexity-description" id="complexityDescription">--</p>
+                </div>
+
+                <!-- Suggested Waste Factor -->
+                <div class="report-card">
+                  <h4>Suggested Waste Factor</h4>
+                  <div class="waste-factor">
+                    <span class="waste-value" id="wasteFactor">--%</span>
+                    <p>Additional material recommended for cuts, waste, and starter courses</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Column: Measurements -->
+              <div class="report-right">
+                <!-- Roof Summary -->
+                <div class="report-card summary-card">
+                  <h4>Roof Summary</h4>
+                  <div class="summary-grid">
+                    <div class="summary-item primary">
+                      <span class="summary-value" id="roofArea">--</span>
+                      <span class="summary-label">Total Roof Area (sq ft)</span>
+                    </div>
+                    <div class="summary-item primary">
+                      <span class="summary-value" id="roofSquares">--</span>
+                      <span class="summary-label">Roofing Squares</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-value" id="roofSegments">--</span>
+                      <span class="summary-label">Roof Facets</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-value" id="roofPitch">--</span>
+                      <span class="summary-label">Predominant Pitch</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pitch Breakdown -->
+                <div class="report-card">
+                  <h4>Pitch Breakdown by Facet</h4>
+                  <div class="pitch-table" id="pitchTable">
+                    <!-- Populated by JavaScript -->
+                  </div>
+                </div>
+
+                <!-- Linear Measurements -->
+                <div class="report-card">
+                  <h4>Estimated Linear Measurements</h4>
+                  <div class="linear-grid">
+                    <div class="linear-item">
+                      <span class="linear-label">Ridges</span>
+                      <span class="linear-value" id="ridgeLength">-- ft</span>
+                    </div>
+                    <div class="linear-item">
+                      <span class="linear-label">Hips</span>
+                      <span class="linear-value" id="hipLength">-- ft</span>
+                    </div>
+                    <div class="linear-item">
+                      <span class="linear-label">Valleys</span>
+                      <span class="linear-value" id="valleyLength">-- ft</span>
+                    </div>
+                    <div class="linear-item">
+                      <span class="linear-label">Eaves</span>
+                      <span class="linear-value" id="eaveLength">-- ft</span>
+                    </div>
+                    <div class="linear-item">
+                      <span class="linear-label">Rakes</span>
+                      <span class="linear-value" id="rakeLength">-- ft</span>
+                    </div>
+                    <div class="linear-item">
+                      <span class="linear-label">Flashing</span>
+                      <span class="linear-value" id="flashingLength">-- ft</span>
+                    </div>
+                  </div>
+                  <p class="linear-note">*Linear measurements are estimated based on roof geometry</p>
+                </div>
+
+                <!-- Material Estimate -->
+                <div class="report-card">
+                  <h4>Material Estimates</h4>
+                  <div class="material-grid">
+                    <div class="material-item">
+                      <span class="material-label">Shingle Bundles (3-tab)</span>
+                      <span class="material-value" id="shingleBundles3">--</span>
+                    </div>
+                    <div class="material-item">
+                      <span class="material-label">Shingle Bundles (Architectural)</span>
+                      <span class="material-value" id="shingleBundlesArch">--</span>
+                    </div>
+                    <div class="material-item">
+                      <span class="material-label">Underlayment Rolls</span>
+                      <span class="material-value" id="underlaymentRolls">--</span>
+                    </div>
+                    <div class="material-item">
+                      <span class="material-label">Drip Edge (10ft pieces)</span>
+                      <span class="material-value" id="dripEdge">--</span>
+                    </div>
+                    <div class="material-item">
+                      <span class="material-label">Ridge Cap Bundles</span>
+                      <span class="material-value" id="ridgeCap">--</span>
+                    </div>
+                    <div class="material-item">
+                      <span class="material-label">Roofing Nails (lbs)</span>
+                      <span class="material-value" id="nailsLbs">--</span>
+                    </div>
+                  </div>
+                  <p class="material-note">*Includes suggested waste factor. Verify with supplier.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price Estimate -->
+            <div class="price-estimate-full">
+              <div class="price-header">
+                <h4>Cost Estimate</h4>
+              </div>
+              <div class="price-breakdown">
+                <div class="price-item">
+                  <span class="price-label">Budget (3-Tab Shingles)</span>
+                  <span class="price-value" id="priceLow">$--</span>
+                </div>
+                <div class="price-item featured">
+                  <span class="price-label">Standard (Architectural Shingles)</span>
+                  <span class="price-value" id="priceMid">$--</span>
+                </div>
+                <div class="price-item">
+                  <span class="price-label">Premium (Designer Shingles)</span>
+                  <span class="price-value" id="priceHigh">$--</span>
+                </div>
+              </div>
+              <p class="price-note">*Estimates include labor and materials. Final price depends on tear-off requirements, decking condition, accessibility, and local factors.</p>
+            </div>
+
+            <!-- Report Actions -->
+            <div class="report-actions">
+              <button type="button" class="btn btn-secondary" onclick="printReport()">Print Report</button>
+              <button type="button" class="btn btn-secondary" onclick="resetEstimate()">New Estimate</button>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="report-disclaimer">
+              <p><strong>Disclaimer:</strong> Generated from satellite imagery and automated analysis. Measurements are estimates. A professional on-site inspection is required before committing a quote.</p>
+            </div>
+          </div>
+
+          <div class="estimate-error" id="estimateError" style="display: none;">
+            <div class="error-content">
+              <span class="error-icon">&#9888;</span>
+              <h4>Unable to Analyze This Property</h4>
+              <p id="errorMessage">Could not retrieve satellite data. Try another address.</p>
+              <button type="button" class="btn btn-secondary" onclick="resetEstimate()">Try Again</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

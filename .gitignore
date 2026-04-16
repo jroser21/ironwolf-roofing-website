@@ -1,3 +1,21 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Environment & secrets
+.env
+backend/.env
+
+# Database files
+*.db
+backend/*.db
+
+# OS files
+.DS_Store
+
+# Wrangler
+.wrangler/
+
 # Large data files
 data/parcels/Parcels.dbf
 data/parcels/Parcels.shp

@@ -1,4 +1,4 @@
-// Premier Roofing Website - JavaScript
+// Ironwolf Roofing Website - JavaScript
 
 // =============================================
 // CONFIGURATION
@@ -6,7 +6,7 @@
 const GOOGLE_API_KEY = 'AIzaSyCzCJaCaLJkVbHf5X8aqIB1WdHBNDoGgvc';
 
 // Backend API URL (change in production)
-const API_URL = 'http://localhost:3000/api';
+const API_URL = '/api';
 
 // Pricing per square (adjust as needed)
 const PRICE_PER_SQUARE_LOW = 465;    // 3-Tab shingles
@@ -799,3 +799,146 @@ document.addEventListener('DOMContentLoaded', function() {
     observer.observe(el);
   });
 });
+
+// =============================================
+// Inspection Request Form (homepage)
+// =============================================
+
+function formatPhoneUSInput(e) {
+  const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+  let formatted = digits;
+  if (digits.length > 6) {
+    formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  } else if (digits.length > 3) {
+    formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  } else if (digits.length > 0) {
+    formatted = `(${digits}`;
+  }
+  e.target.value = formatted;
+}
+
+function setFieldError(inputId, message) {
+  const input = document.getElementById(inputId);
+  const err = document.getElementById('err-' + inputId);
+  if (!input || !err) return;
+  if (message) {
+    input.setAttribute('aria-invalid', 'true');
+    err.textContent = message;
+  } else {
+    input.removeAttribute('aria-invalid');
+    err.textContent = '';
+  }
+}
+
+function validateInspectionForm(values) {
+  let valid = true;
+  ['inspFirstName', 'inspLastName', 'inspPhone', 'inspEmail', 'inspAddress', 'inspReason'].forEach(id => setFieldError(id, ''));
+
+  if (!values.firstName) { setFieldError('inspFirstName', 'Required'); valid = false; }
+  if (!values.lastName) { setFieldError('inspLastName', 'Required'); valid = false; }
+
+  const phoneDigits = values.phone.replace(/\D/g, '');
+  if (!values.phone) { setFieldError('inspPhone', 'Required'); valid = false; }
+  else if (phoneDigits.length !== 10) { setFieldError('inspPhone', 'Enter a valid 10-digit US phone number'); valid = false; }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!values.email) { setFieldError('inspEmail', 'Required'); valid = false; }
+  else if (!emailRegex.test(values.email)) { setFieldError('inspEmail', 'Enter a valid email address'); valid = false; }
+
+  if (!values.address) { setFieldError('inspAddress', 'Required'); valid = false; }
+  if (!values.reason) { setFieldError('inspReason', 'Required'); valid = false; }
+
+  return valid;
+}
+
+async function handleInspectionSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const status = document.getElementById('inspFormStatus');
+  const btn = document.getElementById('inspSubmitBtn');
+
+  const values = {
+    firstName: form.firstName.value.trim(),
+    lastName: form.lastName.value.trim(),
+    phone: form.phone.value.trim(),
+    email: form.email.value.trim(),
+    address: form.address.value.trim(),
+    reason: form.reason.value.trim()
+  };
+
+  if (!validateInspectionForm(values)) {
+    status.textContent = 'Please fix the highlighted fields.';
+    status.style.color = 'var(--secondary-color)';
+    return;
+  }
+
+  btn.disabled = true;
+  const originalBtnText = btn.textContent;
+  btn.textContent = 'Submitting...';
+  status.textContent = '';
+
+  try {
+    const res = await fetch(`${API_URL}/leads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        first_name: values.firstName,
+        last_name: values.lastName,
+        email: values.email,
+        phone: values.phone,
+        address: values.address,
+        service: 'inspection',
+        message: values.reason
+      })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      form.reset();
+      status.textContent = "Thanks! We'll reach out shortly to schedule your inspection.";
+      status.style.color = 'var(--primary-color)';
+    } else {
+      status.textContent = data.error || 'Something went wrong. Please try again.';
+      status.style.color = 'var(--secondary-color)';
+    }
+  } catch (err) {
+    status.textContent = 'Network error. Please try again or call us directly.';
+    status.style.color = 'var(--secondary-color)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalBtnText;
+  }
+}
+
+function _wireInspectionForm() {
+  const addr = document.getElementById('inspAddress');
+  if (addr && window.google && google.maps && google.maps.places && !addr.dataset.acInit) {
+    new google.maps.places.Autocomplete(addr, {
+      types: ['address'],
+      componentRestrictions: { country: 'us' }
+    });
+    addr.dataset.acInit = '1';
+  }
+
+  const phone = document.getElementById('inspPhone');
+  if (phone && !phone.dataset.fmtInit) {
+    phone.addEventListener('input', formatPhoneUSInput);
+    phone.dataset.fmtInit = '1';
+  }
+
+  const form = document.getElementById('inspectionForm');
+  if (form && !form.dataset.submitInit) {
+    form.addEventListener('submit', handleInspectionSubmit);
+    form.dataset.submitInit = '1';
+  }
+}
+
+function initInspectionAutocomplete() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _wireInspectionForm);
+  } else {
+    _wireInspectionForm();
+  }
+}
+
+// Make it globally accessible for the Google Maps async callback
+window.initInspectionAutocomplete = initInspectionAutocomplete;

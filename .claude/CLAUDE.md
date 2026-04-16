@@ -1,6 +1,19 @@
-# Premier Roofing Website
+# Ironwolf Roofing Website
 
-Business website for Premier Roofing Co. Features instant satellite-based roof estimates using Google Solar API and lead management.
+Business website for Ironwolf Roofing.
+
+Customer-facing homepage funnels leads via a "Request a Free Inspection" form. The satellite roof estimator (Google Solar API) lives on a separate internal-only page used by the team; it is not linked from the public nav.
+
+## Branding
+- Logo: `images/ironwolf-logo.svg` (primary), `images/ironwolf-logo.png` (fallback). Source files in `Ironwolf-Roofing/Logo/`.
+- Palette (white, black, light blue, dark blue, grey, silver only):
+  - Dark blue `#0f2847` — primary
+  - Black `#000000` — primary-dark
+  - Light blue `#2563eb` — secondary/CTAs
+  - Silver `#c0c0c0` — accents/borders
+  - Grey `#6b7280` — body text
+  - White `#ffffff`, light gray `#f5f5f5` — backgrounds
+- Defined in `styles.css` `:root` and mirrored in `admin.html` inline styles.
 
 ## Commands
 
@@ -33,6 +46,7 @@ roofing-website/
 ├── gallery.html        # Project gallery
 ├── contact.html        # Contact form
 ├── admin.html          # Admin dashboard (lead management)
+├── internal-estimator.html  # Team-only: Google Solar satellite estimator
 ├── styles.css          # All styles
 ├── script.js           # Frontend JS (Google APIs, forms, estimate logic)
 ├── images/             # Static images
@@ -98,15 +112,30 @@ Required in `backend/.env`:
 ```
 PORT=3000
 FRONTEND_URL=http://localhost:5500
+
+# Twilio SMS — alerts on every new lead
+TWILIO_ACCOUNT_SID=<from Twilio Console>
+TWILIO_AUTH_TOKEN=<from Twilio Console>
+TWILIO_FROM_NUMBER=+1XXXXXXXXXX
+NOTIFY_PHONE=+13147741700
 ```
+
+If Twilio vars are missing, the backend still runs and logs "SMS notifications disabled" on startup. Lead creation succeeds either way — SMS is fire-and-forget.
 
 ## Key Features
 
-### Instant Roof Estimate
-- User enters address via Google Places Autocomplete
-- Google Solar API provides satellite roof measurements
-- Calculates price estimates based on roof squares and complexity
-- Three pricing tiers: 3-tab, architectural, premium shingles
+### Request a Free Inspection (homepage)
+- Public lead-capture form on `index.html`, section `#request-inspection`
+- Fields (all required): First Name, Last Name, Phone (auto-formats to `(XXX) XXX-XXXX`), Email, Address (Google Places autocomplete), Reason for Inspection
+- Client-side validation: 10-digit US phone, email regex, non-empty required fields
+- Submits to `POST /api/leads` with `service="inspection"` and `message=reason`
+- JS entry: `initInspectionAutocomplete()` in `script.js` — registered as the Google Maps callback
+
+### Internal Satellite Estimator (`internal-estimator.html`)
+- Team-only page. Not linked from public nav. Accessed from `admin.html` via the "Roof Estimator" button
+- Uses the same Google Solar API logic that used to be on the homepage
+- Address entered via Google Places Autocomplete → calls Solar API → renders roof area, facets, pitch, complexity, waste factor, material quantities, and 3 pricing tiers (3-tab / architectural / premium)
+- JS entry: `initAutocomplete()` in `script.js` — registered as the Google Maps callback on this page
 
 ### Pricing Configuration (script.js)
 ```javascript

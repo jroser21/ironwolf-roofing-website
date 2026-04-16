@@ -13,9 +13,12 @@ backend/*.db
 # OS files
 .DS_Store
 
-# Wrangler
+# Wrangler & local dev
 .wrangler/
 wrangler.toml
+package.json
+package-lock.json
+node_modules/
 
 # Large data files
 data/parcels/Parcels.dbf

@@ -2,8 +2,7 @@
   "name": "ironwolf-roofing",
   "private": true,
   "scripts": {
-    "dev": "wrangler pages dev . --d1=DB",
-    "deploy": "wrangler pages deploy ."
+    "dev": "wrangler pages dev . --d1=DB"
   },
   "devDependencies": {
     "wrangler": "^4.83.0"
